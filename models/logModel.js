@@ -21,8 +21,8 @@ export const LogAgenda = sequalize.define(
     },
   },
   {
-    //freezeTableName: true
+   
     tableName: "agendapp_logs",
-    //timestamps: false
+
   }
 );

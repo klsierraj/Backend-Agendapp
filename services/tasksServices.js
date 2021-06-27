@@ -1,6 +1,7 @@
 import TaskModel from "../models/taskModel";
 import Error from "../utils/Error";
 import ErrorTypes from "../utils/ErrorTypes";
+import logServices from "./logsServices";
 
 const create = async ({
   title,
@@ -30,7 +31,8 @@ const create = async ({
 
 const detail = async (id) => {
   try {
-    const task = await TaskModel.findById(id)
+    const query = { "_id":id }
+    const task = await TaskModel.findById(query)
       .populate("responsible", "name email")
       .populate("collaborators", "name email")
       .exec();
@@ -59,6 +61,7 @@ const getAll = async ({ status, due_date_init, due_date_end }) => {
       .populate("responsible", "name email")
       .populate("collaborators", "name email")
       .exec();
+      await logServices.create({who:0, log:"GET ALL TASK"})    
     return tasks;
   } catch (error) {
     throw Error({
@@ -71,16 +74,12 @@ const getAll = async ({ status, due_date_init, due_date_end }) => {
 
 const  updateStatus = async (id, status) => {
   try {
-    /*const update = {
-      "status": Number(status)
-    };
-    console.log('update', update)
-    await TaskModel.findByIdAndUpdate(id, update);
-    */
+    
     const task = await TaskModel.findById(id);
     task.status = Number(status);
     await task.save();
-    return { "update": "ok" };
+    await logServices.create({who:0, log:`Task with id ${id} has been modified`})
+    return {'update task': `Task with id ${id} has been modified`};
   } catch (error) {
     throw Error({
       message: error.message || ErrorTypes.DATABASE_QUERY,
